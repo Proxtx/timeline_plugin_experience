@@ -44,7 +44,6 @@ impl crate::Plugin for Plugin {
     }
 
     fn get_style(&self) -> crate::plugin_manager::Style {
-        //crate::plugin_manager::Style::Custom("var(--accentColor3)".to_string(), "var(--accentColor3Light)".to_string(), "var(--lightColor)".to_string())
         crate::plugin_manager::Style::Acc1
     }
 }
