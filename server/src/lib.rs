@@ -1,7 +1,6 @@
 use {
     server_api::{web::auth, db::{Event, Database}, plugin::PluginData},
     server_api::external::types::external::chrono::TimeDelta,
-    experiences_types_lib::types::{CompressedExperienceEvent, CreateExperienceRequest},
     server_api::external::futures::{self, StreamExt},
     server_api::external::rocket::{
         http::Status,
@@ -9,7 +8,7 @@ use {
         response::status::{self, Custom},
         routes, Build, Rocket,
     },
-    server_api::external::types::external::serde::Deserialize,
+    serde::Deserialize,
     server_api::external::types::{
         api::{APIError, APIResult, CompressedEvent},
         timing::Timing,
@@ -19,7 +18,7 @@ use {
 };
 
 use server_api::external::types::external::reqwest;
-use server_api::external::types::external::serde::Serialize;
+use serde::Serialize;
 
 use server_api::config::Config;
 use server_api::external::rocket::http::CookieJar;
@@ -30,6 +29,19 @@ use server_api::plugin::PluginTrait;
 use std::sync::Arc;
 use server_api::external::toml;
 use server_api::external::types;
+
+#[derive(Serialize, Deserialize)]
+pub enum CompressedExperienceEvent {
+    Experience(String),
+    Create(Timing),
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct CreateExperienceRequest {
+    pub name: String,
+    pub time: Timing,
+}
+
 
 #[derive(Deserialize, Clone)]
 struct ConfigData {
@@ -109,7 +121,7 @@ impl PluginTrait for Plugin {
                 result.push(CompressedEvent {
                     title: t.event.name,
                     time: t.timing,
-                    data: Box::new(CompressedExperienceEvent::Experience(t.event.id)),
+                    data: serde_json::to_value(CompressedExperienceEvent::Experience(t.event.id)).unwrap(),
                 })
             }
 
@@ -123,7 +135,7 @@ impl PluginTrait for Plugin {
                 result.push(CompressedEvent {
                     title: "Create Experience".to_string(),
                     time: timing.clone(),
-                    data: Box::new(CompressedExperienceEvent::Create(timing)),
+                    data: serde_json::to_value(CompressedExperienceEvent::Create(timing)).unwrap(),
                 });
                 current = new_current;
             }
