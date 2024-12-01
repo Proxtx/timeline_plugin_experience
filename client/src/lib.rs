@@ -1,6 +1,45 @@
 use { 
-    client_api::{external::::{api::relative_url, experiences_types::types::{CompressedExperienceEvent, CreateExperienceRequest}, wrappers::Band}, plugin::{PluginData, PluginEventData, PluginTrait}, result::EventResult, style::{Style, StyledView}}, leptos::{html::Input, spawn_local, view, window, Callback, IntoView, View}
+    client_api::{external::url::{ParseError, Url}, plugin::{PluginData, PluginEventData, PluginTrait}, result::EventResult, style::{Style, StyledView}, types::{api::ExperiencesHostname, timing::Timing}}, leptos::{component, ev::MouseEvent, html::Input, spawn_local, use_context, view, window, Callback, Children, IntoView, MaybeSignal, View, create_signal}, serde::{Deserialize, Serialize}
 };
+
+#[derive(Serialize, Deserialize)]
+pub enum CompressedExperienceEvent {
+    Experience(String),
+    Create(Timing),
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct CreateExperienceRequest {
+    pub name: String,
+    pub time: Timing,
+}
+
+pub fn relative_url(path: &str) -> Result<Url, ParseError> {
+    let experiences_host: ExperiencesHostname = use_context().unwrap();
+    Url::parse(&experiences_host.0)?.join(path)
+}
+
+
+#[component]
+pub fn Band(
+    children: Children,
+    #[prop(into, default=create_signal("var(--accentColor3)".to_string()).0.into())]
+    color: MaybeSignal<String>,
+    #[prop(into, default=Callback::new(|_|{}))] click: Callback<MouseEvent, ()>,
+) -> impl IntoView {
+    view! {
+        <div
+            class="band"
+            style="padding: var(--contentSpacing);box-sizing: border-box;color: var(--lightColor);width: 100%;display: flex;flex-direction: row;align-items: center;justify-content: center;position: relative;"
+            style:background-color=color
+            on:click=click
+            role="button"
+        >
+            {children()}
+        </div>
+    }
+}
+
 
 pub struct Plugin {
     #[allow(unused)]
