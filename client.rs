@@ -66,7 +66,7 @@ impl crate::Plugin for Plugin {
                             }"
                         </style>
                         <StyledView>
-                            <input ref=name_ref class="name_input" placeholder="Name"/>
+                            <input ref=name_ref class="name_input" placeholder="Name" />
                             <Band click=Callback::new(move |_| {
                                 let timing = timing.clone();
                                 spawn_local(async move {
